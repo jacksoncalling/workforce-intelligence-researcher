@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workforce Intelligence Dashboard — DAA NRW FuE</title>
+    <style>
+        :root {
+            --bg: #fafaf9;
+            --card: #ffffff;
+            --border: #e7e5e4;
+            --text: #1c1917;
+            --text-secondary: #57534e;
+            --accent: #0369a1;
+            --accent-light: #e0f2fe;
+            --confirmed: #166534;
+            --confirmed-bg: #f0fdf4;
+            --emerging: #92400e;
+            --emerging-bg: #fffbeb;
+            --blind: #991b1b;
+            --blind-bg: #fef2f2;
+            --prompt-bg: #f0f9ff;
+            --prompt: #0c4a6e;
+            --research: #6b21a8;
+            --research-bg: #faf5ff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        header .meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        section {
+            margin-bottom: 1.5rem;
+        }
+
+        section h2 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 100px;
+            font-weight: 500;
+        }
+
+        .pattern-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid transparent;
+        }
+
+        .pattern-card.confirmed { border-left-color: var(--confirmed); background: var(--confirmed-bg); }
+        .pattern-card.emerging { border-left-color: var(--emerging); background: var(--emerging-bg); }
+        .pattern-card.blind { border-left-color: var(--blind); background: var(--blind-bg); }
+        .pattern-card.prompt { border-left-color: var(--prompt); background: var(--prompt-bg); }
+
+        .pattern-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-card .coaching-action {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text);
+            background: rgba(255,255,255,0.7);
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .pattern-card .evidence {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .lens-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            background: rgba(3, 105, 161, 0.1);
+            color: var(--accent);
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            margin-right: 0.25rem;
+        }
+
+        .blind-spots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .blind-spot-item {
+            background: var(--blind-bg);
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .blind-spot-item strong {
+            display: block;
+            color: var(--blind);
+        }
+
+        .research-callout {
+            background: var(--research-bg);
+            border: 1px solid #e9d5ff;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .research-callout .research-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--research);
+            margin-bottom: 0.35rem;
+        }
+
+        .research-callout ul {
+            margin: 0;
+            padding-left: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .research-callout li {
+            margin-bottom: 0.25rem;
+        }
+
+        .research-callout .source {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .research-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            border-left: 4px solid var(--research);
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .research-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .research-section p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .flow-diagram {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+        }
+
+        .flow-diagram h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: var(--accent-light);
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        .flow-arrow {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .flow-steps { flex-direction: column; align-items: flex-start; }
+            .flow-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Workforce Intelligence Dashboard</h1>
+        <p class="meta">DAA NRW FuE — Compound Report Q2 2026 (April/Mai) — Letzte Aktualisierung: 31.05.2026</p>
+    </header>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="number">5</div>
+            <div class="label">Neue Signale</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">3</div>
+            <div class="label">Coaches aktiv</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">2</div>
+            <div class="label">Muster bestätigt</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">5</div>
+            <div class="label">Blinde Flecken</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">1</div>
+            <div class="label">Sensing Prompt aktiv</div>
+        </div>
+    </div>
+
+    <section>
+        <h2>Bestätigte Muster <span class="badge" style="background: var(--confirmed-bg); color: var(--confirmed);">Handeln</span></h2>
+
+        <div class="pattern-card confirmed">
+            <h3>IT-Bewerbungsprozesse brechen nach Runde 2 ab</h3>
+            <p>Interviews starten schnell (oft innerhalb von Tagen), aber nach der zweiten Runde: Funkstille. Keine Absage, kein Angebot, keine Kommunikation. Widerspricht BA-Daten, die steigende IT-Vakanzen zeigen.</p>
+            <div class="coaching-action">
+                → Coachees auf längere Zeiträume vorbereiten. Momentum-Strategien für die Stille-Phase entwickeln. Nachfass-Taktiken besprechen.
+            </div>
+            <div class="evidence">
+                <span class="lens-tag">Digitalisierung</span>
+                7+ Coachees · 3 Coaches · Aachen, Köln, Düsseldorf · Konfidenz: Mittel→Hoch
+            </div>
+            <div class="research-callout">
+                <div class="research-label">Forschungskanal — was die Daten sagen</div>
+                <ul>
+                    <li><span class="source">BA Arbeitsmarktbericht (Apr 2026):</span> IT-Vakanzen in NRW +8% ggü. Vorjahr — mehr Stellen, aber unsere Coaches sehen weniger Angebote.</li>
+                    <li><span class="source">Bitkom Q1 2026:</span> 42% der IT-Firmen melden "Schwierigkeiten bei Stellenbesetzung" — aber ohne Unterscheidung zwischen "keine Kandidaten" und "kein Budget."</li>
+                    <li><span class="source">IAB Stellenerhebung Q4 2025:</span> Durchschnittliche Vakanzzeit in IT: 156 → 183 Tage. Passt zum Stall-Muster.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pattern-card confirmed">
+            <h3>Pflege: Ghost-Postings und unsichtbarer Mangel</h3>
+            <p>Stellen werden ausgeschrieben aber nicht aktiv besetzt. Internationale Kandidat:innen warten 6-12 Monate auf Anerkennung. Zwei Coachees haben Stellen nach 8 Wochen verlassen wegen Arbeitsbedingungen. IAB sagt "Mangel lässt nach" — Coaches sehen das Gegenteil.</p>
+            <div class="coaching-action">
+                → Stellen telefonisch verifizieren (Pflegedienstleitung anrufen). Arbeitsbedingungen explizit ansprechen. Für internationale Kandidat:innen: Anerkennungszeit als Phase planen, nicht als Lücke.
+            </div>
+            <div class="evidence">
+                <span class="lens-tag">Gute Arbeit</span>
+                <span class="lens-tag">Demografie</span>
+                5 Coachees · 2 Coaches · NRW · Konfidenz: Mittel
+            </div>
+            <div class="research-callout">
+                <div class="research-label">Forschungskanal — was die Daten sagen</div>
+                <ul>
+                    <li><span class="source">IAB Kurzbericht 8/2026:</span> 12% weniger unbesetzte Pflege-Stellen in NRW — klingt nach Besserung, aber Coaches sehen: Stellen verschwinden aus Postings, nicht weil sie besetzt werden.</li>
+                    <li><span class="source">BAMF Anerkennung 2025:</span> Ø 8,4 Monate für internationale Pflegequalifikationen. Während dieser Zeit bleibt die Stelle statistisch "unbesetzt."</li>
+                    <li><span class="source">DGB Gute-Arbeit-Index 2025:</span> Pflege hat die niedrigsten Werte bei Work-Life-Balance und körperlicher Belastung. Erklärt die schnelle Fluktuation.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Emerging <span class="badge" style="background: var(--emerging-bg); color: var(--emerging);">Beobachten</span></h2>
+
+        <div class="pattern-card emerging">
+            <h3>KI-Kompetenz wird in Nicht-Tech-Stellen abgefragt</h3>
+            <p>Administration, Marketing, HR — "Erfahrung mit KI-Tools" taucht in Stellenbeschreibungen auf, wo es vor 6 Monaten nicht stand. Was "KI-Kompetenz" bedeutet, variiert stark: von "kennt ChatGPT" bis "kann Prompts schreiben."</p>
+            <div class="coaching-action">
+                → Kurzer KI-Literacy-Check in frühen Sitzungen. 30 Min ChatGPT-Einführung kann reichen. Wichtiger als die Fähigkeit: wie man im Interview darüber spricht.
+            </div>
+            <div class="evidence">
+                <span class="lens-tag">Digitalisierung</span>
+                <span class="lens-tag">Gute Arbeit</span>
+                4 Coachees · 2 Coaches · NRW + Bayern · Konfidenz: Niedrig-Mittel
+            </div>
+            <div class="research-callout">
+                <div class="research-label">Forschungskanal</div>
+                <ul>
+                    <li><span class="source">BIBB/BAuA 2025:</span> 23% der Verwaltungsangestellten nutzen KI-Tools (2023: 8%). Die Nachfrage in Stellenanzeigen spiegelt reale Nutzung.</li>
+                    <li><span class="source">EU AI Act (seit Feb 2025):</span> Verlangt "AI Literacy" für Mitarbeitende an Hochrisiko-KI-Systemen — manche Arbeitgeber fordern KI-Kompetenz vorsorglich für Compliance.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pattern-card emerging">
+            <h3>LinkedIn Premium: Pay-to-Play im Bewerbungsprozess?</h3>
+            <p>3 Coachees aus Sales und Marketing berichten unabhängig voneinander: InMail-Nachrichten (Premium-Funktion) erhalten deutlich schnellere Recruiter-Antworten als Standardbewerbungen über Portale. Ein Coachee testete dies direkt: identische Unterlagen — InMail beantwortet nach 24h, Portal-Bewerbung nach zwei Wochen unbeantwortet. Mechanismus wahrscheinlich: Recruiter priorisieren oder filtern Postfächer nach Kanal.</p>
+            <div class="coaching-action">
+                → LinkedIn Premium (~40€/Monat) als taktische Option in frühen Sitzungen ansprechen — kein Muss, aber ein Hebel. Nur empfehlen, wenn Profil stark genug und Coachee aktiv auf Direktansprache setzt. Als kurzfristige Investition während aktiver Suche framen, nicht als Dauerabo.
+            </div>
+            <div class="evidence">
+                <span class="lens-tag">Digitalisierung</span>
+                3 Coachees · 1 Coach · NRW · Konfidenz: Niedrig-Mittel (Mai 2026, neu)
+            </div>
+        </div>
+
+        <div class="pattern-card emerging">
+            <h3>Farblich angepasste Bewerbungen → mehr Einladungen?</h3>
+            <p>Ein Coach berichtet: Bewerbungsunterlagen in der Markenfarbe des Zielunternehmens korrelieren mit höherer Einladungsquote. 15 Coachees über 6 Monate, branchen-übergreifend. Mechanismus unklar — aber konsistent beobachtet.</p>
+            <div class="coaching-action">
+                → Als "Warum nicht probieren?"-Experiment vorschlagen. Ergebnisse tracken. Wenn 3+ Coaches Ähnliches beobachten: Konfidenz hochstufen.
+            </div>
+            <div class="evidence">
+                <span class="lens-tag">Digitalisierung</span>
+                15 Coachees · 1 Coach · Konfidenz: Niedrig (braucht Validierung)
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Forschungs-Highlights <span class="badge" style="background: var(--research-bg); color: var(--research);">Externe Quellen</span></h2>
+
+        <div class="research-section">
+            <h3>Was die Forschung diesen Monat zeigt — ohne dass unsere Coaches es (noch) sehen</h3>
+            <p style="margin-bottom: 0.75rem;">Diese Ergebnisse aus externen Quellen haben noch keine Entsprechung in unseren Coach-Signalen. Sie könnten blinde Flecken aufdecken — oder Themen sein, die unsere Coachees (noch) nicht betreffen.</p>
+            <ul style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 1.2rem;">
+                <li style="margin-bottom: 0.5rem;">
+                    <span style="font-weight: 500; color: var(--text);">Plattform-Arbeit wächst in NRW:</span>
+                    IAQ Duisburg (Q1 2026) meldet 14% mehr Solo-Selbstständige in plattformbasierter Arbeit (Lieferdienste, IT-Freelancing, Pflege-Vermittlung). Keiner unserer Coaches hat bisher Coachees gemeldet, die in Plattform-Arbeit einsteigen oder darüber nachdenken.
+                    <br><em>→ Sensing-Frage: Haben Coachees Plattform-Arbeit als Alternative in Betracht gezogen?</em>
+                </li>
+                <li style="margin-bottom: 0.5rem;">
+                    <span style="font-weight: 500; color: var(--text);">Bürgergeld-Reform verschärft Mitwirkungspflichten:</span>
+                    BMAS-Entwurf (Mai 2026) sieht kürzere Fristen für Eingliederungsvereinbarungen vor. Könnte den Druck auf Coachees erhöhen, Positionen anzunehmen, die nicht zu ihrem Profil passen.
+                    <br><em>→ Sensing-Frage: Berichten Coachees von erhöhtem Druck durch die Arbeitsagentur?</em>
+                </li>
+                <li>
+                    <span style="font-weight: 500; color: var(--text);">BIBB: 6 neue Ausbildungsberufe im Bereich Nachhaltigkeit ab 2026/27.</span>
+                    Darunter "Fachkraft für nachhaltige Gebäudetechnik" und "Umwelttechnische/r Assistent/in." Noch keine Coach-Signale zu Green-Transition-Berufen — einer unserer größten blinden Flecken.
+                    <br><em>→ Sensing-Frage: Begegnen Coachees neuen Berufsbezeichnungen mit Nachhaltigkeitsbezug?</em>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <section>
+        <h2>Sensing Prompt <span class="badge" style="background: var(--prompt-bg); color: var(--prompt);">FuE fragt</span></h2>
+
+        <div class="pattern-card prompt">
+            <h3>IT-Coaches: Zeitraum bis Angebot vs. Zeitraum bis Interview</h3>
+            <p>Wir sehen schnelle Starts und dann Stillstand. Bitte in den nächsten IT-Sitzungen gezielt fragen:</p>
+            <div class="coaching-action">
+                1. Wie schnell kam das erste Interview? Wie lange seit dem letzten Schritt?<br>
+                2. Nach der Stille — wurde nachgefragt? Was passierte?<br>
+                3. Startup, Mittelstand oder Konzern?<br>
+                4. War das beim letzten Jobwechsel anders?
+            </div>
+            <div class="evidence">
+                Läuft bis: 30.06.2026 · Auch "kein Signal" ist wertvoll — hilft uns verstehen, wo das Muster NICHT gilt.
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Blinde Flecken <span class="badge" style="background: var(--blind-bg); color: var(--blind);">Kein Signal</span></h2>
+
+        <div class="blind-spots-grid">
+            <div class="blind-spot-item">
+                <strong>Green / Nachhaltigkeit</strong>
+                Kein Signal — je. Keiner unserer Coachees kommt aus diesem Bereich.
+            </div>
+            <div class="blind-spot-item">
+                <strong>Einzelhandel / Retail</strong>
+                Großer Arbeitgeber, null Sichtbarkeit.
+            </div>
+            <div class="blind-spot-item">
+                <strong>Logistik / Lager</strong>
+                Wachsende Branche, keine Daten.
+            </div>
+            <div class="blind-spot-item">
+                <strong>Produktion / Fertigung</strong>
+                Letztes Signal > 6 Monate. Veraltet.
+            </div>
+            <div class="blind-spot-item">
+                <strong>Handwerk / Trades</strong>
+                Fachkräftemangel-Narrativ ungetestet durch unser Netzwerk.
+            </div>
+        </div>
+        <p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-secondary);">
+            → Wenn Sie Coachees in diesen Branchen haben: jede Beobachtung ist wertvoll. Sie sind möglicherweise der/die einzige Coach, der/die dort hinschaut.
+        </p>
+    </section>
+
+    <div class="flow-diagram">
+        <h3>Wie das System funktioniert</h3>
+        <div class="flow-steps">
+            <div class="flow-step">Coachee erlebt Arbeitsmarkt</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Coach beobachtet Muster</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">/market-signal (5 Min)</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Anonymisiert teilen</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Compound-Routine</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Dieses Dashboard</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-step">Besseres Coaching</div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Workforce Intelligence Researcher — DAA NRW FuE · Built with ICM (Interpretable Context Methodology)</p>
+        <p>Nächstes Compound: 01.06.2026 · Sensing Prompt läuft bis: 30.06.2026</p>
+    </footer>
+</body>
+</html>
