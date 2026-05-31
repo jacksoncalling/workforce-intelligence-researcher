@@ -2,6 +2,8 @@
 
 A folder-based AI researcher for an R&D team at a German education provider. The researcher sits on top of a distributed coaching network — 20 coaches observing the labor market daily through conversations with unemployed professionals. It synthesizes their anonymized signals with external research, identifies blind spots, and designs better sensing questions. Built for the DAA NRW FuE team using ICM.
 
+**[▶ Watch the demo](https://youtu.be/mXLF03iWBzs)**
+
 ---
 
 ## What This Is
